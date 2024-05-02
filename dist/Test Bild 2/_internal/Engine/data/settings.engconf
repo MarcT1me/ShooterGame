@@ -1,0 +1,42 @@
+""" Engine settings
+Basic Python syntax
+specify the interface by example: 
+
+*:*type*
+or
+*class*Main data*
+
+To ignore it, you can use the decorator
+
+def ENGDATA_IGNORE(f): return f
+
+You are allowed to use yourself.
+It is considered bad manners to create functions or overwrite them, not counting lambda
+"""
+from Engine.data.config import Core, MainData, File
+from Engine import EMPTY, YES
+
+""" Set Core Settings """
+Core.default = EMPTY
+
+""" Set Main Settings """
+# const
+MainData.PRE_INIT = MainData.PRE_INIT
+MainData.IS_RELEASE = YES
+MainData.SCENE_USE_TB = MainData.SCENE_USE_TB
+# names
+MainData.APPLICATION_name = 'ShooterGame'
+MainData.APPLICATION_version = '0.3.5'
+MainData.ENGINE_name = MainData.ENGINE_name
+
+""" Set File Settings """
+File.config_name = File.config_name
+File.config_ext = 'toml'
+File.config_local_dir = File.config_local_dir
+# names
+File.DATA_dir = 'gamedata'
+File.SHADER_path = 'shaders'
+File.TEXTURE_path = ''
+# ico names
+File.APPLICATION_ICO_dir = 'presets'
+File.APPLICATION_ICO_name = 'ShooterGame_Ico.png'

@@ -1,0 +1,10 @@
+# graphic
+pygame
+moderngl
+# working with window
+pygetwindow
+screeninfo
+# other
+toml
+loguru
+glm
