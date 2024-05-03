@@ -28,7 +28,7 @@ class Barrel(Entity):
         for i in list(App.scene.entity_list.values()):
             self.frame_text_rect = pg.Rect(*self.pos.xy, *self.image.get_size())
             if isinstance(i, Bullet):
-                if self.frame_text_rect.collidepoint(*i.pos.xy):
+                if self.frame_text_rect.clipline(*i.latest_pos.xy, *i.pos.xy):
                     App.scene.delete(i.id)
                     self.health -= i.damage
     
@@ -37,8 +37,18 @@ class Barrel(Entity):
             self.image,
             vec2(self.pos.xy - App.window.camera.pos.xy)
         )
-        rct = pg.Rect(*(pg.mouse.get_pos() + vec2(App.window.camera.pos.xy) - (100, 100)), 200, 200)
-        if self.frame_text_rect.colliderect(rct):
+        self.render_health()
+    
+    def render_health(self):
+        
+        start_pos = App.scene.entity_list['player1'].pos.xy
+        end_pos = start_pos + vec2(
+            cos(-radians(App.scene.entity_list['player1'].rot.z)),
+            sin(-radians(App.scene.entity_list['player1'].rot.z))
+        )*App.scene.distance
+        
+        if self.frame_text_rect.clipline(*start_pos, *end_pos) or\
+                length(self.pos.xy - pg.mouse.get_pos() - vec2(App.window.camera.pos.xy)) < 100:
             pg.draw.rect(
                 surface=App.window.screen._win,
                 color='gray',

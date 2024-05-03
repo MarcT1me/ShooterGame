@@ -5,17 +5,21 @@ from core.entities.base_entity import Entity
 from core.entities.Bullet import Bullet
 from random import choice as random_choice
 from random import random
+from math import inf
 
 
 class BaseGun(Entity):
     # bullet data
-    bullet_speed = 0
-    damage = 20
-    magazine_size = 10
-    ammo_size = 0.0
-    cooldown = 0.5
+    bullet_speed = 7
+    damage = 0
+    magazine_size = 0
+    ammo_size = 0
+    cooldown = 0
+    max_distance = inf
+    max_time = inf
+    bullet_size = 20
     # recoil
-    recoil_force = 20
+    recoil_force = 0
     recoil_multiple = lambda self: (random() - 0.5)*self.recoil_force
     
     # sounds
@@ -60,10 +64,18 @@ class BaseGun(Entity):
         # add bullet
         App.scene.entity_list[_id] = Bullet(
             _id=_id,
-            pos=_pos,
+            pos=_pos + vec3(
+                cos(-radians(_rot.z))*10,
+                sin(-radians(_rot.z))*10,
+                0
+            ),
             rotation=_rot,
             speed=self.bullet_speed,
             damage=self.damage,
+            # experimental
+            max_distance=self.max_distance,
+            max_time=self.max_time,
+            size=self.bullet_size
         )
     
     def reload_shutter(self):
@@ -121,6 +133,82 @@ class BaseGun(Entity):
             self.texture,
             self.gap_v2
         )
+    
+    
+class DebigGun(BaseGun):
+    gunshot_sounds = [
+        pg.mixer.Sound(f'{config.File.APPLICATION_path}\\presets\\shotgun\\{i}.ogg') for i in {
+            'shotgun-gunshot-1', 'shotgun-gunshot-2', 'shotgun-gunshot-3', 'shotgun-gunshot-4'
+        }
+    ]
+    bullet_speed = 5
+    recoil_force = 0
+    damage = 100
+    ammo_size = 0
+    magazine_size = -1
+    cooldown = 0.035
+    max_distance = inf
+    bullet_size = 10
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(name='assault_rifle', *args, **kwargs)
+        self.gap_v2 = vec2(30, 26)
+        self.inventory['shutter'] = -1
+    
+    def update_weapon(self):
+        super().update()
+        
+        if self.fire:
+            if App.clock.timer('assault_reload', self.cooldown):
+                self.gunshot()
+
+
+""" MAIN """
+
+
+class Knife(BaseGun):
+    gunshot_sounds = [
+        pg.mixer.Sound(f'{config.File.APPLICATION_path}\\presets\\knife\\{i}.ogg') for i in {
+            'knife_slash1_1'
+        }
+    ]
+    damage = 75
+    cooldown = 0.2
+    max_time = 0
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(name='knife', *args, **kwargs)
+        self.gap_v2 = vec2(30, 26)
+        self.inventory['shutter'] = -1
+    
+    def reload_shutter(self): pass
+    
+    def reload_magazine(self, inventory: dict) -> int: pass
+    
+    def update_weapon(self):
+        if self.fire:
+            if App.clock.timer('knife', self.cooldown):
+                self.gunshot()
+    
+    def create_bullet(self, _pos, _rot):
+        super().create_bullet(
+            _pos + vec3(
+                cos(-radians(_rot.z))*20,
+                sin(-radians(_rot.z))*20,
+                0
+            ),
+            _rot
+        )
+    
+    def gunshot(self) -> bool:
+        # bullet
+        self.create_bullet(
+            _pos=App.scene.entity_list['player1'].pos,
+            _rot=App.scene.entity_list['player1'].rot,
+        )
+        # play sound
+        App.scene.entity_list['player1'].sound_channel.play(random_choice(self.gunshot_sounds))
+        return True
 
 
 class AssaultRifle(BaseGun):
@@ -135,6 +223,7 @@ class AssaultRifle(BaseGun):
     ammo_size = 7.62
     magazine_size = 30
     cooldown = 0.1
+    max_distance = 1500
     
     def __init__(self, *args, **kwargs):
         super().__init__(name='assault_rifle', *args, **kwargs)
@@ -161,6 +250,7 @@ class ShotGun(BaseGun):
     ammo_size = 30.0
     magazine_size = 5
     cooldown = 0.75
+    max_distance = 1500
     
     def __init__(self, *args, **kwargs):
         super().__init__(name='shotgun', *args, **kwargs)
@@ -194,6 +284,7 @@ class ScarL(BaseGun):
     ammo_size = 5.56
     magazine_size = 15
     cooldown = 0.1725
+    max_distance = 1500
     
     def __init__(self, *args, **kwargs):
         super().__init__(name='scar_l', *args, **kwargs)

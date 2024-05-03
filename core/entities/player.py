@@ -26,15 +26,17 @@ class Player(Entity):
         self.selected_weapon: int = 1
         self.inventory = {
             'weapons': [
-                'hands',
+                'knife',
                 'assault_rifle',
                 'scar_l',
-                'shotgun'
+                'shotgun',
+                'debug',
             ],
             'ammo':    {
                 7.62: 250,
                 30.0: 70,
                 5.56: 120,
+                0:    -1
             },
         }
         
@@ -44,6 +46,17 @@ class Player(Entity):
     @property
     def active_weapon(self) -> BaseGun:
         return App.scene.entity_list[self.inventory['weapons'][self.selected_weapon]]
+    
+    @property
+    def collision(self) -> pg.Rect:
+        return pg.Rect(
+            *(self.pos.xy - (25, 25) + vec2(
+                -cos(radians(self.rot.z)), sin(radians(self.rot.z))
+            )*25 - vec2(
+                sin(radians(self.rot.z)), cos(radians(self.rot.z))
+            )*15),
+            *(50, 50)
+        )
     
     def event(self, event):
         """ events """
@@ -78,7 +91,7 @@ class Player(Entity):
         elif event.type == JOYHATMOTION:
             if self.selected_weapon == 1 and event.value[0] < 0:
                 self.selected_weapon = 3
-            elif self.selected_weapon == 3 and event.value[0] > 0:
+            elif self.selected_weapon == 4 and event.value[0] > 0:
                 self.selected_weapon = 1
             else:
                 self.selected_weapon += event.value[0]
@@ -98,12 +111,19 @@ class Player(Entity):
                 self.active_weapon.fire = False
                 self.selected_weapon = 3
                 self.texture_changed = True
+            elif event.key == K_0:
+                self.active_weapon.fire = False
+                self.selected_weapon = 0
+                self.texture_changed = True
             
             # KEY - RELOAD
             elif event.key == K_r:
                 self.active_weapon.reload_magazine(self.inventory['ammo'])
             elif event.key == K_RETURN:
                 self.active_weapon.reload_shutter()
+            # KEY - DROP WEAPON
+            elif event.key == K_q:
+                self.selected_weapon = 0
         
         elif event.type == KEYUP:
             pass
@@ -138,7 +158,7 @@ class Player(Entity):
                 self.vel.y += joystick.get_axis(1)
                 # scope
                 axis_2 = joystick.get_axis(2)/2
-                self.rot.z -= axis_2
+                self.rot.z -= axis_2 * App.clock.delta
                 if axis_2 != 0:
                     self.texture_changed = True
         
@@ -172,6 +192,23 @@ class Player(Entity):
         )
         
         if not config.MainData.IS_RELEASE:
+            # pg.draw.rect(
+            #     surface=App.window.screen._win,
+            #     color='red',
+            #     rect=(
+            #         *(App.window.screen.get_size()//2 - vec2(self.frame_texture.get_size())//2),
+            #         *(self.frame_texture.get_size())
+            #     ),
+            #     width=3
+            # )
+            collision = self.collision
+            collision.center -= App.window.camera.pos.xy
+            pg.draw.rect(
+                surface=App.window.screen._win,
+                color='red',
+                rect=collision,
+                width=3
+            )
             pg.draw.line(
                 surface=App.window.screen._win,
                 color='cyan',
@@ -179,5 +216,6 @@ class Player(Entity):
                 end_pos=vec2(
                     cos(-radians(self.rot.z)),
                     sin(-radians(self.rot.z))
-                )*App.scene.distance + App.window.screen.get_size()//2
+                )*App.scene.distance + App.window.screen.get_size()//2,
+                width=3
             )

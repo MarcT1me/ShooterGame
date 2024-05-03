@@ -27,5 +27,5 @@ Screen.DEFAULT_WIN_FLAGS = Screen.DEFAULT_WIN_FLAGS
 Screen.title = 'Test gr.engconf'
 Screen.size = Screen.size
 Screen.fps = Screen.fps
-Screen.vsync = Screen.vsync
+Screen.vsync = NO
 Screen.flags |= RESIZABLE
