@@ -55,14 +55,14 @@ class BaseWeapon(Entity):
         self.fire = False
         self.inventory = {
             'magazine': 0,
-            'shutter':  -1,
+            'shutter':  0,
         }
         self.dropped = dropped
     
     def reload_shutter(self):
         if self.inventory['magazine'] > 0:
             self.inventory['magazine'] -= 1
-            self.inventory['shutter'] += 1
+            self.inventory['shutter'] += (self.inventory['shutter'] < 1)
         elif self.inventory['shutter']:
             self.inventory['shutter'] -= 1
     
@@ -96,7 +96,10 @@ class BaseWeapon(Entity):
         pg.mouse.set_pos(recoil_vector)
     
     def gunshot_check_magazine(self):
-        return self.inventory['shutter'] != 0
+        if self.inventory['shutter'] == 0:
+            return False
+        self.inventory['shutter'] -= 1
+        return True
     
     def gunshot_sound(self):
         App.scene.entity_list['player1'].sound_channel.play(random_choice(self.gunshot_sounds))
@@ -358,6 +361,8 @@ class Python(BaseWeapon, AdditionalWEAPON):
                 App.clock.stop_expect(self.python_gunshot_event)
                 App.clock.expect(self.python_gunshot_event, 0.2)
             self.fire = False
+    
+    def reload_shutter(self): pass
     
     def reload_magazine(self, inventory: dict) -> int:
         used_ammo = self.calculate_used_ammo(inventory)
