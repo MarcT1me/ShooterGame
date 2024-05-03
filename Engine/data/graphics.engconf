@@ -19,7 +19,7 @@ from Engine import RESIZABLE, NO
 """ Set Screen Settings """
 # default
 Screen.DEFAULT_WIN_SIZE = 1600, 900
-Screen.DEFAULT_WIN_TITLE = f'{MainData.APPLICATION_name}  v {MainData.APPLICATION_version}'
+Screen.DEFAULT_WIN_TITLE = Screen.DEFAULT_WIN_TITLE
 Screen.DEFAULT_WIN_MONITOR = Screen.DEFAULT_WIN_MONITOR
 Screen.DEFAULT_WIN_VSYNC = NO
 Screen.DEFAULT_WIN_FLAGS = Screen.DEFAULT_WIN_FLAGS

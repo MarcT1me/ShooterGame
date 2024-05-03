@@ -1,7 +1,7 @@
 ﻿""" Main engine Window
 """
 from pygame.display import set_mode, get_window_size
-from pygame import Rect, Color, Surface
+from pygame import Rect
 # Engine
 from Engine.scripts.app_data import WinData
 from Engine.data import config
@@ -9,20 +9,16 @@ from Engine.lscript import vec2
 
 
 class Window:
-    def __init__(self, win_data):
+    def __init__(self, win_data: WinData):
         """ init main window """
         kwargs = {
             'size':  (win_data.width, win_data.height),
             'flags': win_data.flags,
             'vsync': win_data.vsync,
         }
-        if win_data.monitor not in (None, config.EMPTY):
+        if win_data.monitor not in (None, config.EMPTY) and str(win_data.monitor) not in 'nullEmptyType':
             kwargs['display'] = win_data.monitor
         self._win = set_mode(**kwargs)
-        # rewrite main data
-        config.Screen.size = kwargs['size']
-        config.Screen.title = win_data.title
-        config.Screen.vsync = win_data.vsync
     
     def __repr__(self):
         return f'<IWindow: t=\'{config.Screen.title}\' s={get_window_size()}>'

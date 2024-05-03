@@ -2,7 +2,15 @@ import pygame as pg
 from Engine import *
 # core
 from core.entities.base_entity import Entity
-from core.entities.weapons import BaseGun
+from core.entities.weapons import BaseWeapon, MainWEAPON, AdditionalWEAPON
+from copy import copy
+
+key_weapon_binds = {
+    K_1: 1,
+    K_2: 2,
+    K_3: 3,
+    K_0: 0,
+}
 
 
 class Player(Entity):
@@ -23,14 +31,13 @@ class Player(Entity):
         self.mouse_pos = vec2(0)
         
         """ weapon """
-        self.selected_weapon: int = 1
+        self.selected_weapon: int = 0
         self.inventory = {
             'weapons': [
                 'knife',
-                'assault_rifle',
-                'scar_l',
-                'shotgun',
-                'debug',
+                'debug' if not config.MainData.IS_RELEASE else None,
+                None,
+                None,
             ],
             'ammo':    {
                 7.62: 250,
@@ -44,7 +51,7 @@ class Player(Entity):
         self.sound_channel = pg.mixer.Channel(0)
     
     @property
-    def active_weapon(self) -> BaseGun:
+    def active_weapon(self) -> BaseWeapon:
         return App.scene.entity_list[self.inventory['weapons'][self.selected_weapon]]
     
     @property
@@ -57,6 +64,23 @@ class Player(Entity):
             )*15),
             *(50, 50)
         )
+    
+    def pick_up_weapon(self, entity: BaseWeapon, hand_vec, index):
+        if entity.dropped:
+            rct = pg.Rect(*entity.pos.xy, *entity.texture.get_size())
+            if rct.clipline(*self.pos.xy, *hand_vec.xy):
+                self.selected_weapon = index
+                self.inventory['weapons'][self.selected_weapon] = entity.id
+                
+                self.active_weapon.dropped = False
+                self.texture_changed = True
+                return True
+    
+    def take_weapon_in_hand(self, index):
+        if self.inventory['weapons'][index] is not None:
+            self.selected_weapon = index
+            self.active_weapon.fire = False
+            self.texture_changed = True
     
     def event(self, event):
         """ events """
@@ -87,43 +111,66 @@ class Player(Entity):
                 elif bool_tr < 0:
                     self.active_weapon.fire = False
         
-        # JUY - CHANGE SLOT
+        # JUY/MOUSE - CHANGE SLOT
         elif event.type == JOYHATMOTION:
             if self.selected_weapon == 1 and event.value[0] < 0:
                 self.selected_weapon = 3
-            elif self.selected_weapon == 4 and event.value[0] > 0:
+            elif self.selected_weapon == 3 and event.value[0] > 0:
                 self.selected_weapon = 1
             else:
                 self.selected_weapon += event.value[0]
+            
+            while self.inventory['weapons'][self.selected_weapon] is None:
+                self.selected_weapon += event.value[0]
+                if self.selected_weapon < 0 or self.selected_weapon > len(self.inventory['weapons']) - 1:
+                    self.selected_weapon = 0
+            
+            self.active_weapon.fire = False
             self.texture_changed = True
         
-        # KEY - CHANGE SLOT
         if event.type == KEYDOWN:
-            if event.key == K_1:
-                self.active_weapon.fire = False
-                self.selected_weapon = 1
-                self.texture_changed = True
-            elif event.key == K_2:
-                self.active_weapon.fire = False
-                self.selected_weapon = 2
-                self.texture_changed = True
-            elif event.key == K_3:
-                self.active_weapon.fire = False
-                self.selected_weapon = 3
-                self.texture_changed = True
-            elif event.key == K_0:
-                self.active_weapon.fire = False
-                self.selected_weapon = 0
-                self.texture_changed = True
+            # KEY - CHANGE SLOT
+            if event.key in key_weapon_binds:
+                self.take_weapon_in_hand(key_weapon_binds[event.key])
             
             # KEY - RELOAD
             elif event.key == K_r:
                 self.active_weapon.reload_magazine(self.inventory['ammo'])
             elif event.key == K_RETURN:
                 self.active_weapon.reload_shutter()
+            
             # KEY - DROP WEAPON
             elif event.key == K_q:
-                self.selected_weapon = 0
+                if self.selected_weapon != 0:
+                    # set dropped weapon data
+                    self.active_weapon.fire = False
+                    self.active_weapon.pos = copy(self.pos)
+                    self.active_weapon.dropped = True
+                    # set current ceil - empty
+                    self.inventory['weapons'][self.selected_weapon] = None
+                    self.selected_weapon = 0
+                    self.texture_changed = True
+            
+            # TAKE - WEAPON
+            if event.key == K_f:
+                if None in self.inventory['weapons']:
+                    index = self.inventory['weapons'].index(None)
+                    # if allow empty slots
+                    hand_vec = self.pos.xy + vec2(
+                        cos(-radians(self.rot.z)),
+                        sin(-radians(self.rot.z))
+                    )*50
+                    # finding weapons
+                    for e in App.scene.entity_list.values():
+                        # if main weapon
+                        if isinstance(e, MainWEAPON) and index <= 2:
+                            if self.pick_up_weapon(e, hand_vec, index):
+                                break
+                        
+                        # elif pistol
+                        elif isinstance(e, AdditionalWEAPON) and self.inventory['weapons'][3] is None:
+                            if self.pick_up_weapon(e, hand_vec, index):
+                                break
         
         elif event.type == KEYUP:
             pass
@@ -158,7 +205,7 @@ class Player(Entity):
                 self.vel.y += joystick.get_axis(1)
                 # scope
                 axis_2 = joystick.get_axis(2)/2
-                self.rot.z -= axis_2 * App.clock.delta
+                self.rot.z -= axis_2*App.clock.delta
                 if axis_2 != 0:
                     self.texture_changed = True
         
@@ -191,31 +238,42 @@ class Player(Entity):
             vec2(App.window.screen.get_size() - self.frame_texture.get_size())//2
         )
         
+        pg.draw.line(
+            surface=App.window.screen._win,
+            color='cyan',
+            start_pos=App.window.screen.get_size()//2,
+            end_pos=vec2(
+                cos(-radians(self.rot.z)),
+                sin(-radians(self.rot.z))
+            )*App.scene.distance + App.window.screen.get_size()//2,
+            width=1
+        )
+        
         if not config.MainData.IS_RELEASE:
-            # pg.draw.rect(
-            #     surface=App.window.screen._win,
-            #     color='red',
-            #     rect=(
-            #         *(App.window.screen.get_size()//2 - vec2(self.frame_texture.get_size())//2),
-            #         *(self.frame_texture.get_size())
-            #     ),
-            #     width=3
-            # )
+            pg.draw.rect(
+                surface=App.window.screen._win,
+                color='red',
+                rect=(
+                    *(App.window.screen.get_size()//2 - vec2(self.frame_texture.get_size())//2),
+                    *(self.frame_texture.get_size())
+                ),
+                width=1
+            )
             collision = self.collision
             collision.center -= App.window.camera.pos.xy
             pg.draw.rect(
                 surface=App.window.screen._win,
                 color='red',
                 rect=collision,
-                width=3
+                width=2
             )
             pg.draw.line(
                 surface=App.window.screen._win,
-                color='cyan',
-                start_pos=App.window.screen.get_size()//2,
-                end_pos=vec2(
+                color='purple',
+                start_pos=self.pos.xy - App.window.camera.pos.xy,
+                end_pos=self.pos.xy + vec2(
                     cos(-radians(self.rot.z)),
                     sin(-radians(self.rot.z))
-                )*App.scene.distance + App.window.screen.get_size()//2,
+                )*50 - App.window.camera.pos.xy,
                 width=3
             )

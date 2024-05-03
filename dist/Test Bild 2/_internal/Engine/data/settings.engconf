@@ -26,7 +26,7 @@ MainData.IS_RELEASE = YES
 MainData.SCENE_USE_TB = MainData.SCENE_USE_TB
 # names
 MainData.APPLICATION_name = 'ShooterGame'
-MainData.APPLICATION_version = '0.3.5'
+MainData.APPLICATION_version = '0.4.3'
 MainData.ENGINE_name = MainData.ENGINE_name
 
 """ Set File Settings """

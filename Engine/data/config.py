@@ -7,7 +7,7 @@ import os
 from inspect import stack
 from collections.abc import Mapping
 # engine
-from Engine.data.constants import ZERO, EMPTY
+from Engine.data.constants import ZERO, EMPTY, NO
 from Engine.scripts.app_data import AttributesKeeper
 
 
@@ -23,6 +23,8 @@ class MainData:
 
 
 class Core(AttributesKeeper): pass
+
+
 Core = AttributesKeeper.__new__(Core, EMPTY)
 
 
@@ -36,10 +38,13 @@ class Screen(AttributesKeeper):
     DEFAULT_WIN_FLAGS: bool = DOUBLEBUF
     # main window
     size: tuple[int, int] = DEFAULT_WIN_SIZE
+    monitor: int = DEFAULT_WIN_MONITOR
     title: str = 'My Engine Game'
     vsync: bool = DEFAULT_WIN_VSYNC
     flags: int = DEFAULT_WIN_FLAGS
     fps: int = ZERO
+    full: bool = NO
+    game_settings: dict = {}
 
 
 class File:
@@ -76,6 +81,20 @@ class File:
     """ Working with config.* file """
     
     @staticmethod
+    def set_default_data(
+            set_default_core=lambda: File.data.setdefault('Core', {})
+    ):
+        _ = File.data.setdefault('Screen', {})
+        _ = File.data['Screen'].setdefault('fps', Screen.fps)
+        _ = File.data['Screen'].setdefault('size', Screen.size)
+        _ = File.data['Screen'].setdefault('vsync', Screen.vsync)
+        _ = File.data['Screen'].setdefault('full', Screen.full)
+        _ = File.data['Screen'].setdefault('monitor', Screen.monitor)
+        
+        _ = File.data['Screen'].setdefault('game_settings', Screen.game_settings)
+        set_default_core()
+    
+    @staticmethod
     def _load(_load_function) -> data:
         file_path = rf"{File.data_path()}\{File.DATA_dir}\{File.config_name}.{File.config_ext}"
         try:
@@ -83,10 +102,7 @@ class File:
                 logger.debug(f'load from file: {File.config_name}.{File.config_ext}')
                 return _load_function(file)
         except FileNotFoundError:
-            File.data = {
-                "Screen": {},
-                "Core":   {}
-            }
+            File.set_default_data()
             # create dir
             if not os.path.exists(os.path.dirname(file_path)):
                 os.makedirs(os.path.dirname(file_path))

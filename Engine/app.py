@@ -44,6 +44,8 @@ class App:
     
     scene = None
     
+    Engine.config.File.load_engine_config('settings')
+    
     def __new__(cls, *args, **kwargs):
         """ creating App class """
         obj = super().__new__(cls)
@@ -53,9 +55,8 @@ class App:
     def __pre_init__(self, *args, **kwargs):
         """ Pre-initialisation Application. Before main __init__ """
         App.failures.clear()
-        
         pygame.init()
-        Engine.config.File.load_engine_config('settings')
+        
         Engine.config.File.load_engine_config('graphics')
     
     def __init__(self, *args, **kwargs):
@@ -83,7 +84,8 @@ class App:
         """ Post initialisation, after main __init__ """
         ...
     
-    def on_exit(self) -> None:
+    @staticmethod
+    def on_exit() -> None:
         """ method called after ending app.run """
         from Engine.scripts import node_window, button
         
@@ -104,6 +106,8 @@ class App:
     def failure(err) -> None:
         """ calling, if got exception in mainloop """
         App.failures.append(err)
+        App.joysticks.clear()
+        App.event_list.clear()
         print('\n\n')
         logger.exception(err)
         print('\n\n')

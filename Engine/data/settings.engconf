@@ -14,7 +14,7 @@ You are allowed to use yourself.
 It is considered bad manners to create functions or overwrite them, not counting lambda
 """
 from Engine.data.config import Core, MainData, File
-from Engine import EMPTY, NO
+from Engine import EMPTY, YES
 
 """ Set Core Settings """
 Core.default = EMPTY
@@ -22,11 +22,11 @@ Core.default = EMPTY
 """ Set Main Settings """
 # const
 MainData.PRE_INIT = MainData.PRE_INIT
-MainData.IS_RELEASE = NO
+MainData.IS_RELEASE = YES
 MainData.SCENE_USE_TB = MainData.SCENE_USE_TB
 # names
 MainData.APPLICATION_name = 'ShooterGame'
-MainData.APPLICATION_version = '0.3.5'
+MainData.APPLICATION_version = '0.4.3'
 MainData.ENGINE_name = MainData.ENGINE_name
 
 """ Set File Settings """

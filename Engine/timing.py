@@ -69,6 +69,12 @@ class clock:
                     # setting the actual end time
                     double.first.end = current_time
                     post(double.first)  # push event in event list
+                
+    def stop_expect(self, event: Event):
+        try:
+            self.roster.__delattr__(event.name)
+        except AttributeError:
+            event.used = True
     
     def expect(self, event: Event, _seconds: float):
         # find name

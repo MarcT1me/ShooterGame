@@ -13,13 +13,17 @@ from core.entities.player import Player
 class ShooterGame(App):
     def __pre_init__(self, *args, **kwargs):
         super().__pre_init__()
-        self.win_data = WinData(
-            width=1280,
-            height=720,
+        config.File.reed_data()
+        config.File.set_default_data()
+        
+        self.window.data = WinData(
+            width=config.Screen.size[0],
+            height=config.Screen.size[1],
             vsync=config.Screen.vsync,
             flags=config.Screen.flags,
+            monitor=config.Screen.monitor,
+            title=f'{config.MainData.APPLICATION_name}  v {config.MainData.APPLICATION_version}'
         )
-        App.window.data = self.win_data
     
     def __init__(self):
         super().__init__()
@@ -56,39 +60,33 @@ class ShooterGame(App):
                 if event.key == K_ESCAPE:
                     App.running = NO
                     return
-            elif event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    App.running = NO
                 # test TR raise
-                elif event.key == K_g:
+                elif event.key == K_g and App.key_list[K_LCTRL]:
                     _ = 1 + '1'
+                    return
+                # test TR raise
+                elif event.key == K_r and App.key_list[K_LCTRL]:
+                    config.File.reed_data()
+                    
+                    self.window.data = WinData(
+                        width=config.Screen.size[0],
+                        height=config.Screen.size[1],
+                        vsync=config.Screen.vsync,
+                        flags=config.Screen.flags,
+                        monitor=config.Screen.monitor,
+                        title=f'{config.MainData.APPLICATION_name}  v {config.MainData.APPLICATION_version}'
+                    )
                 
                 # other key events
-                elif event.key == K_F11:
+                elif event.key == K_F11 and App.key_list[K_LCTRL]:
                     """ toggle fullscreen """
-                    # find window into any monitor
-                    index, monitor = self.window.get_display_index()
-                    # calculate flags and sizes
-                    if not self.window.is_full():
-                        width = monitor.width
-                        height = monitor.height
-                        flags = config.Screen.flags | FULLSCREEN
-                    else:
-                        width = self.win_data.width
-                        height = self.win_data.height
-                        index = EMPTY  # if not full change monitor on NONE
-                        flags = config.Screen.flags
+                    config.Screen.full = not config.Screen.full
+                    self.window.set_desktop_full(config.Screen.full)
                     
-                    # setting changes
-                    self.window.data = self.window.data.extern(
-                        {
-                            'width':   width,
-                            'height':  height,
-                            'monitor': index,
-                            'flags':   flags
-                        }
-                    )
-                    self.window.resset()
+                elif event.key == K_F10 and App.key_list[K_LCTRL]:
+                    """ toggle fullscreen """
+                    config.Screen.full = not config.Screen.full
+                    self.window.toggle_full(config.Screen.full)
                 
                 elif event.key == K_TAB:
                     """ show monitor """
@@ -155,6 +153,11 @@ class ShooterGame(App):
             fin_scene_font,
             (0, 0)
         )
+    
+    @staticmethod
+    def on_exit() -> None:
+        config.File.save_data()
+        App.on_exit()
 
 
 if __name__ == '__main__':

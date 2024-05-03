@@ -1,7 +1,7 @@
 import pygame as pg
 
 from core.entities.base_entity import Entity
-from core.entities.Bullet import Bullet
+from core.entities.bullet import Bullet
 from random import choice as random_choice
 from Engine import *
 
@@ -48,7 +48,8 @@ class Barrel(Entity):
         )*App.scene.distance
         
         if self.frame_text_rect.clipline(*start_pos, *end_pos) or\
-                length(self.pos.xy - pg.mouse.get_pos() - vec2(App.window.camera.pos.xy)) < 100:
+                length(self.pos.xy - pg.mouse.get_pos() - vec2(App.window.camera.pos.xy)) < 100 or\
+                self.health != 100:
             pg.draw.rect(
                 surface=App.window.screen._win,
                 color='gray',

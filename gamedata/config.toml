@@ -1,0 +1,10 @@
+[Screen]
+fps = 0
+size = [ 1280, 720,]
+vsync = false
+full = false
+monitor = "EmptyType"
+
+[Core]
+
+[Screen.game_settings]

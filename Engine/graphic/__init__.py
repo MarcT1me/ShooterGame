@@ -11,7 +11,8 @@ from typing import Optional
 from Engine import (  # constants
     GL_CONTEXT_MAJOR_VERSION, GL_CONTEXT_MINOR_VERSION,  # k, k
     GL_CONTEXT_PROFILE_MASK, GL_CONTEXT_PROFILE_CORE,  # k: v
-    OPENGL, EMPTY
+    OPENGL, EMPTY,
+    config, FULLSCREEN,
 )
 # typing
 from Engine.scripts.app_data import WinData
@@ -22,7 +23,7 @@ from Engine.graphic.camera import Camera
 
 
 class Graphics:
-    data: Optional[WinData] = EMPTY # Window configs
+    data: Optional[WinData] = EMPTY  # Window configs
     
     screen: Optional[Window] = EMPTY  # Window surface
     interface: Optional[AdvancedInterface] = EMPTY  # Interface surface
@@ -46,11 +47,12 @@ class Graphics:
     def set_core(cls):
         """ set main variables"""
         cls.screen = Window(win_data=cls.data)
+        display.set_caption(cls.data.title)
+        cls.toggle_full(config.Screen.full)
         cls.interface = AdvancedInterface(win_data=cls.data)
         cls.camera = Camera()
         if cls.data.flags & OPENGL:
             cls.context = moderngl.create_context()
-        display.set_caption(cls.data.title)
         cls.flip()
     
     @classmethod
@@ -92,10 +94,51 @@ class Graphics:
     def set_caption(_caption):
         display.set_caption(_caption)
     
-    @staticmethod
-    def set_full(_is_full):
+    @classmethod
+    def toggle_full(cls, _is_full):
+        """ toggle fullscreen """
+        if _is_full != cls.is_full():
+            # find window into any monitor
+            index, monitor = cls.get_display_index()
+            # calculate flags and sizes
+            if not cls.is_full():
+                width = monitor.width
+                height = monitor.height
+                flags = config.Screen.flags | FULLSCREEN
+            else:
+                width = config.Screen.size[0]
+                height = config.Screen.size[1]
+                index = EMPTY  # if not full change monitor on NONE
+                flags = config.Screen.flags
+            
+            # setting changes
+            cls.data = cls.data.extern(
+                {
+                    'width':   width,
+                    'height':  height,
+                    'monitor': index,
+                    'flags':   flags
+                }
+            )
+            
+            cls.resset()
+    
+    @classmethod
+    def set_desktop_full(cls, _is_full):
         """ Set full screen YES/NO  """
-        if _is_full != display.is_fullscreen():
+        if _is_full != cls.is_full():
+            # calculate flags and sizes
+            if not cls.is_full():
+                flags = config.Screen.flags | FULLSCREEN
+            else:
+                flags = config.Screen.flags
+            # setting changes
+            cls.data = cls.data.extern(
+                {
+                    'flags': flags
+                }
+            )
+            cls.resset()
             display.toggle_fullscreen()
     
     @staticmethod
@@ -111,11 +154,11 @@ class Graphics:
     def set_cursor_image(image: Surface, hotspot: tuple = (0, 0)) -> None:
         cursor = cursors.Cursor(hotspot, image)
         mouse.set_cursor(cursor)
-
+    
     @staticmethod
     def set_cursor_style(system: int) -> None:
         mouse.set_cursor(system)
-        
+    
     @staticmethod
     def flip():
         display.flip()
