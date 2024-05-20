@@ -1,0 +1,31 @@
+""" Engine settings
+Basic Python syntax
+specify the interface by example: 
+
+*:*type*
+or
+*class*Main data*
+
+To ignore it, you can use the decorator
+
+def ENGDATA_IGNORE(f): return f
+
+You are allowed to use yourself.
+It is considered bad manners to create functions or overwrite them, not counting lambda
+"""
+from Engine.data.config import Screen, MainData
+from Engine import RESIZABLE, NO
+
+""" Set Screen Settings """
+# default
+Screen.DEFAULT_WIN_SIZE = 1600, 900
+Screen.DEFAULT_WIN_TITLE = Screen.DEFAULT_WIN_TITLE
+Screen.DEFAULT_WIN_MONITOR = Screen.DEFAULT_WIN_MONITOR
+Screen.DEFAULT_WIN_VSYNC = NO
+Screen.DEFAULT_WIN_FLAGS = Screen.DEFAULT_WIN_FLAGS
+# frame
+Screen.title = 'Test gr.engconf'
+Screen.size = Screen.size
+Screen.fps = Screen.fps
+Screen.vsync = NO
+Screen.flags |= RESIZABLE
