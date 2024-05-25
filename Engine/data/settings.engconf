@@ -1,0 +1,34 @@
+""" Engine settings
+Basic Python syntax
+specify the interface by example
+Use imports
+"""
+from Engine.data.constants import NO, YES  # NOT CHANGE
+from Engine.data.config import Core, MainData, File  # NOT CHANGE
+# config imports
+from Engine import EMPTY
+
+""" Set Core Settings """
+Core.default = EMPTY  # EMPTY
+
+""" Set Main Settings """
+# const
+MainData.PRE_INIT = MainData.PRE_INIT  # YES
+MainData.IS_RELEASE = NO  # YES
+MainData.SCENE_USE_TB = MainData.SCENE_USE_TB  # YES
+# names
+MainData.APPLICATION_name = MainData.APPLICATION_name  # "SomeName"
+MainData.APPLICATION_version = MainData.APPLICATION_version  # "SomeVersion"
+MainData.ENGINE_name = MainData.ENGINE_name  # "Engine"
+
+""" Set File Settings """
+File.config_name = File.config_name  # "config"
+File.config_ext = File.config_ext  # "json"
+File.config_dir_is_local = File.config_dir_is_local
+# names
+File.DATA_dir = File.DATA_dir  # r"gamedata"
+File.SHADER_dir = File.SHADER_dir  # r"Engine/data/shaders"
+File.TEXTURE_dir = File.TEXTURE_dir  # r"Engine/data/textures"
+# ico names
+File.APPLICATION_ICO_dir = File.APPLICATION_ICO_dir  # __ENGINE_DATA__
+File.APPLICATION_ICO_name = File.APPLICATION_ICO_name  # "ico.ico"

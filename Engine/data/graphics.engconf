@@ -1,0 +1,24 @@
+""" Engine settings
+Basic Python syntax
+specify the interface by example
+Use imports
+"""
+from Engine.data.constants import NO, YES  # NOT CHANGE
+from Engine.data.config import Screen  # NOT CHANGE
+# config imports
+from Engine import RESIZABLE, ZERO
+
+""" Set Screen Settings """
+# default
+Screen.DEFAULT_WIN_SIZE = Screen.DEFAULT_WIN_SIZE  # 1280, 720
+Screen.DEFAULT_WIN_TITLE = Screen.DEFAULT_WIN_TITLE  # 'App name'
+Screen.DEFAULT_WIN_MONITOR = Screen.DEFAULT_WIN_MONITOR  # EMPTY
+Screen.DEFAULT_WIN_VSYNC = Screen.DEFAULT_WIN_VSYNC  # ZERO
+Screen.DEFAULT_WIN_FLAGS = ZERO  # DOUBLEBUF
+Screen.DEFAULT_WIN_FLAGS |= ZERO  # ZERO
+# frame
+Screen.title = 'My Engine Game'  # 'My Engine Game'
+Screen.size = Screen.size  # DEFAULT_WIN_SIZE
+Screen.fps = Screen.fps  # ZERO
+Screen.vsync = NO  # DEFAULT_WIN_VSYNC
+Screen.flags |= RESIZABLE  # ZERO
