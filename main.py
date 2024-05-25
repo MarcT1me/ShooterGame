@@ -17,8 +17,7 @@ class ShooterGame(App):
         config.File.set_default_data()
         
         self.window.data = WinData(
-            width=config.Screen.size[0],
-            height=config.Screen.size[1],
+            size=config.Screen.size,
             vsync=config.Screen.vsync,
             flags=config.Screen.flags,
             monitor=config.Screen.monitor,
@@ -39,6 +38,7 @@ class ShooterGame(App):
         self.aggregate_fps: pygame.font.SysFont = ...
         
         self.main_loading_screen = Loading()
+        self.main_loading_screen.jump_to(100)
         self.main_scene = TestScene()
         
         for i in range(24):
@@ -69,8 +69,7 @@ class ShooterGame(App):
                     config.File.reed_data()
                     
                     self.window.data = WinData(
-                        width=config.Screen.size[0],
-                        height=config.Screen.size[1],
+                        size=config.Screen.size,
                         vsync=config.Screen.vsync,
                         flags=config.Screen.flags,
                         monitor=config.Screen.monitor,
@@ -133,7 +132,7 @@ class ShooterGame(App):
         )
         App.window.screen.blit(
             fin_fps_font,
-            (0, App.window.data.height - fin_fps_font.get_height())
+            (0, App.window.data.size[1] - fin_fps_font.get_height())
         )
         
         player: Player = App.scene.entity_list["player1"]
@@ -153,11 +152,10 @@ class ShooterGame(App):
             fin_scene_font,
             (0, 0)
         )
-    
-    @staticmethod
-    def on_exit() -> None:
+        
+    def on_exit(self) -> None:
+        App.on_exit(self)
         config.File.save_data()
-        App.on_exit()
 
 
 if __name__ == '__main__':

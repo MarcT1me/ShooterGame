@@ -15,7 +15,7 @@ class Loading:
         self.loading_fin_font = font.SysFont('Arial', 100).render('Loading', True, (100, 100, 100))
         self.load_bar_rect = [
             0,  # x
-            App.window.data.height - 10,  # y - в нижней части экрана
+            App.window.data.size[1] - 10,  # y - в нижней части экрана
             0,  # width (progress)
             10  # height
         ]
@@ -23,7 +23,7 @@ class Loading:
     
     def jump_to(self, value):
         self.p = value
-        self.load_bar_rect[2] = self.p/100*App.window.data.width
+        self.load_bar_rect[2] = self.p/100*App.window.data.size[0]
         self.render()
     
     def render(self):
@@ -33,7 +33,7 @@ class Loading:
         )
         App.window.screen.blit(
             self.loading_fin_font,
-            (20, App.window.data.height//5 - self.loading_fin_font.get_height()//2)
+            (20, App.window.data.size[0]//5 - self.loading_fin_font.get_height()//2)
         )
         
         draw.rect(App.window.screen._win, (100, 100, 100), self.load_bar_rect)

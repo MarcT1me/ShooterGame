@@ -12,7 +12,7 @@ import numpy as np
 class TestScene:
     def __init__(self):
         self.entity_list: dict[id, Entity] = dict()
-        self.distance = App.window.data.width*1.5
+        self.distance = App.window.data.size[0]*1.5
         self.free_cam = False
         
         self.entity_list['player1'] = Player(_id='player1', pos=vec3(App.window.screen.get_size()//2, 0))
@@ -71,8 +71,8 @@ class TestScene:
     
     def draw_floor_grid(self):
         coords: list[tuple[int]] = self.floor_grid_counter(
-            self.floor_texture.get_width(), App.window.camera.pos.x, App.window.data.width,
-            self.floor_texture.get_height(), App.window.camera.pos.y, App.window.data.height
+            self.floor_texture.get_width(), App.window.camera.pos.x, App.window.data.size[0],
+            self.floor_texture.get_height(), App.window.camera.pos.y, App.window.data.size[0]
         )
         
         for coord in coords:

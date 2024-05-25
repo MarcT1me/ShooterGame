@@ -7,4 +7,4 @@ screeninfo
 # other
 toml
 loguru
-glm
+pyglm

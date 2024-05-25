@@ -7,7 +7,7 @@ venv
 *.ini
 
 # build and compilation
-data_from_compile_files
+data_for_compile_files
 build
 *.spec
 
