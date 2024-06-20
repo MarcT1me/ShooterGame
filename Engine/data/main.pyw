@@ -1,21 +1,21 @@
-import pygame
-from Engine.app import mainloop
+﻿import pygame
 # Engine
+from Engine.app import mainloop
 from Engine import *
 
-# core
-from core.message_screens import Loading
-from core.scene import TestScene
-from core.entities.decore import Barrel
-from core.entities.player import Player
 
-
-class ShooterGame(App):
+class QuantumGame(App):
     def __pre_init__(self, *args, **kwargs):
+        """ app pre- initialisation """
+        # read and rewrite configs
         super().__pre_init__()
+        config.File.reed_data()
+        config.File.set_default_data()
         
+        # setting Engine data
         self.window.data = WinData(
-            size=config.Screen.size,
+            width=config.Screen.size[0],
+            height=config.Screen.size[1],
             vsync=config.Screen.vsync,
             flags=config.Screen.flags,
             monitor=config.Screen.monitor,
@@ -23,32 +23,27 @@ class ShooterGame(App):
         )
     
     def __init__(self):
+        """ app initialisation """
         super().__init__()
-        # working with Engine window after Engine.init()
-        self.window.set_icon(
-            pygame.image.load(
-                f'{config.File.APPLICATION_path}\\{config.File.APPLICATION_ICO_dir}\\{config.File.APPLICATION_ICO_name}'
-            )
-        )
         
-        """ other variables """
         self.fps_font = pygame.font.SysFont('Arial', 30)
         self.aggregate_fps: pygame.font.SysFont = ...
-        
-        self.main_loading_screen = Loading()
-        self.main_loading_screen.jump_to(100)
-        self.main_scene = TestScene()
-        
-        for i in range(24):
-            self.main_scene.entity_list[f'barrel{i}'] = Barrel(_id=f'barrel{i}', pos=30*i)
-        
-        self.fps_font: pygame.font.SysFont = pygame.font.SysFont('Arial', 20, True)
-        self.fps_font: pygame.font.SysFont = pygame.font.SysFont('Arial', 20, True)
-        App.scene = self.main_scene
-        App.window.set_cursor_style(pygame.cursors.diamond)
     
-    def events(self) -> None:
-        """ handle events """
+    def __post_init__(self, *args, **kwargs):
+        """ some post-init """
+        logger.debug([str(i) for i in (NULL, EMPTY, BINARY)])
+        
+        # event
+        self.test_event = pygame.event.Event(pygame.USEREVENT + 1)
+        
+        # wait him 5 sec
+        self.clock.expect(self.test_event, 5)
+        
+        # print name
+        logger.debug(f'create test wait event with name {self.test_event.name}')
+    
+    def handle_event(self) -> None:
+        """ App events """
         for event in App.event_list:
             # quit from app
             if event.type == QUIT:
@@ -67,7 +62,8 @@ class ShooterGame(App):
                     config.File.reed_data()
                     
                     self.window.data = WinData(
-                        size=config.Screen.size,
+                        width=config.Screen.size[0],
+                        height=config.Screen.size[1],
                         vsync=config.Screen.vsync,
                         flags=config.Screen.flags,
                         monitor=config.Screen.monitor,
@@ -79,7 +75,7 @@ class ShooterGame(App):
                     """ toggle fullscreen """
                     config.Screen.full = not config.Screen.full
                     self.window.set_desktop_full(config.Screen.full)
-                    
+                
                 elif event.key == K_F10 and App.key_list[K_LCTRL]:
                     """ toggle fullscreen """
                     config.Screen.full = not config.Screen.full
@@ -93,7 +89,7 @@ class ShooterGame(App):
                 """ resize window """
                 self.window.data = self.window.data.extern(
                     {
-                        'width':  event.size[0],
+                        'width': event.size[0],
                         'height': event.size[1],
                     }
                 )
@@ -101,7 +97,7 @@ class ShooterGame(App):
             elif event.type == WINDOWDISPLAYCHANGED:
                 logger.debug(f'Window now on {event.display_index} display')
             
-            # Handle hotplugging
+            # Handle hot-plugging
             elif event.type == pygame.JOYDEVICEADDED:
                 # This event will be generated when the program starts for every
                 # joystick, filling up the list without needing to create them manually.
@@ -112,49 +108,31 @@ class ShooterGame(App):
                 logger.info('joystick disconnect', event.instance_id)
                 del App.joysticks[event.instance_id]
             
-            App.scene.event(event)
+            # custom
+            elif event.type == self.test_event.type:
+                if self.clock.timer('safe_console', INF):
+                    logger.warning(
+                        f'TestEvent waited \t delay in processing = {(event.end - event.start) - event.delay}'
+                    )
     
     def update(self) -> None:
         """ Update application """
         self.aggregate_fps = round(min(self.clock.get_fps(), 99999))
-        App.scene.update()
     
     def render(self) -> None:
         """ render app surfaces """
-        App.scene.render()
+        # without filling and flipping
         
         fin_fps_font = self.fps_font.render(
-            f'fps: {self.aggregate_fps}      delta: {self.clock.delta*0.001}',
+            f'fps: {self.aggregate_fps}      delta: {self.clock.delta * 0.001}',
             True,
             'cyan'
-        )
+        )  # create frame
         App.window.screen.blit(
             fin_fps_font,
-            (0, App.window.data.size[1] - fin_fps_font.get_height())
-        )
-        
-        player: Player = App.scene.entity_list["player1"]
-        weapon_id: str = player.inventory['weapons'][player.selected_weapon]
-        weapon_inventory: dict = App.scene.entity_list[weapon_id].inventory
-        fin_scene_font = self.fps_font.render(
-            f'SCENE len: {len(App.scene.entity_list)}       '
-            f'PLAYER weapon  '
-            f'name: {weapon_id}       '
-            f'magazine: {weapon_inventory["magazine"]}  '
-            f'shutter {weapon_inventory["shutter"]}       '
-            f'ammo {player.inventory["ammo"][App.scene.entity_list[weapon_id].ammo_size]}',
-            True,
-            'white'
-        )
-        App.window.screen.blit(
-            fin_scene_font,
-            (0, 0)
-        )
-        
-    def on_exit(self) -> None:
-        App.on_exit(self)
-        config.File.save_data()
+            (0, App.window.data.height - fin_fps_font.get_height())
+        )  # blit
 
 
 if __name__ == '__main__':
-    mainloop(ShooterGame)
+    mainloop(QuantumGame)
